@@ -14,16 +14,27 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
 
-        <TextView
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:id="@+id/text"
-            android:layout_gravity="left|top"
-            android:ellipsize="none"
-            android:clickable="false"
-            android:maxLines="3"
-            android:padding="3dp"
-            android:singleLine="false" />
+            android:layout_height="match_parent"
+            android:id="@+id/sv"
+            android:layout_gravity="center_horizontal|top" >
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:id="@+id/ll">
+
+                <View
+                    android:layout_width="fill_parent"
+                    android:layout_height="0.2dp"
+                    android:id="@+id/separator"
+                    android:visibility="visible"
+                    android:background="@android:color/darker_gray" />
+
+                </LinearLayout>
+        </ScrollView>
     </FrameLayout>
 
     <!-- android:layout_gravity="start" tells DrawerLayout to treat

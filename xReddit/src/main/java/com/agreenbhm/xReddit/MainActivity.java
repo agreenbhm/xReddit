@@ -6,9 +6,12 @@ import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,7 +20,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.ScrollView;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -34,6 +49,7 @@ import java.net.URL;
 import java.net.*;
 import java.net.URLConnection;
 
+
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
@@ -47,7 +63,15 @@ public class MainActivity extends Activity
      */
     private CharSequence mTitle;
 
-    @Override
+    private Thread.UncaughtExceptionHandler androidDefaultUEH;
+
+    private Thread.UncaughtExceptionHandler handler = new Thread.UncaughtExceptionHandler(){
+        public void uncaughtException(Thread thread, Throwable ex) {
+            Log.e("xReddit", "Uncaught exception is: ", ex);
+            androidDefaultUEH.uncaughtException(thread, ex);
+        }
+    };
+
     protected void onCreate(Bundle savedInstanceState) {
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
@@ -55,6 +79,10 @@ public class MainActivity extends Activity
         StrictMode.setThreadPolicy(policy);
 
         super.onCreate(savedInstanceState);
+
+        androidDefaultUEH = Thread.getDefaultUncaughtExceptionHandler();
+        Thread.setDefaultUncaughtExceptionHandler(handler);
+
         setContentView(R.layout.activity_main);
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
@@ -66,42 +94,114 @@ public class MainActivity extends Activity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        TextView text = (TextView)findViewById(R.id.text);
+        //TextView text = (TextView)findViewById(R.id.text);
 
-        URL url;
+        URL url = null;
 
         try {
             url = new URL("http://www.reddit.com/new.json");
         }
         catch (MalformedURLException e) {
-            System.out.println("URL error");
+            //System.out.println("URL error");
             android.util.Log.w("com.agreenbhm.xReddit", "url error");
             return;
         }
 
         HttpURLConnection con = null;
-        String data = "test";
+        String stringData = "";
+
+        JSONObject jsonData = new JSONObject();
+        JSONArray jsonArray = new JSONArray();
+        JSONObject jsonData1 = new JSONObject();
+
         try {
             con = (HttpURLConnection) url.openConnection();
             InputStream in = new BufferedInputStream(con.getInputStream());
-            data = readStream(in);
+            stringData = readStream(in);
+            System.out.println("Pulled data: " + stringData);
+            System.out.println(stringData.equals(null));
         }
         catch (IOException e) {
             android.util.Log.w("com.agreenbhm.xReddit", "con error");
-            System.out.println("con error");
+            //System.out.println("con error");
             return;
         }
         finally {
-            if(con != null){
+            if (con != null) {
                 con.disconnect();
             }
-            text.setText(data);
         }
+
+        try {
+            jsonData = new JSONObject(stringData);
+            System.out.println("jsonData: " + jsonData);
+            Log.v("xReddit", "jsonData: " + jsonData);
+            jsonData1 = jsonData.getJSONObject("data");
+            System.out.println("jsonData1: " + jsonData1);
+            jsonArray = jsonData1.getJSONArray("children");
+        }
+        catch (JSONException e) {
+            android.util.Log.e("xReddit", "JSON error: " + e);
+        }
+
+        TextView[] posts = new TextView[jsonArray.length()];
+        FrameLayout fl = (FrameLayout)findViewById(R.id.container);
+        LinearLayout ll = (LinearLayout)findViewById(R.id.ll);
+
+        View[] separator = new View[jsonArray.length()];
+
+        for(int i = 0; i < jsonArray.length(); i++) {
+            try {
+                JSONObject currentPostJSON = jsonArray.getJSONObject(i);
+                JSONObject currentPost = currentPostJSON.getJSONObject("data");
+
+                System.out.println("pre-json");
+                System.out.println(currentPost);
+                //String title = "";
+                String title = currentPost.getString("title");
+                System.out.println("pre-new");
+                posts[i] = new TextView(this);
+                posts[i].setText(title);
+                posts[i].setHeight(80);
+                posts[i].setEllipsize(TextUtils.TruncateAt.END);
+                posts[i].setClickable(true);
+                posts[i].setMaxLines(3);
+                posts[i].setHorizontallyScrolling(false);
+                posts[i].setSingleLine(false);
+                posts[i].setPadding(3, 3, 3, 3);
+
+                //posts[i] = (TextView) findViewById(R.id.text);
+                posts[i].setText(title);
+                System.out.println("pre-add");
+
+
+                ll.addView(posts[i]);
+
+                separator[i] = (View) view.findViewById(R.id.separator);
+
+
+                //separator[i].setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT));
+
+
+                //ll.addView(separator[i]);
+
+                //lv.addView(posts[i]);
+                //fl.addView(posts[i]);
+            }
+            catch (JSONException e) {
+                System.out.println("Error adding TextView");
+                continue;
+            }
+        }
+
+
+        //text.setText(data);
     }
+
 
     private String readStream(InputStream is) {
         BufferedReader reader = null;
-        String data = null;
+        String data = "";
         try {
             reader = new BufferedReader(new InputStreamReader(is));
 
@@ -214,7 +314,7 @@ public class MainActivity extends Activity
                 Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
             TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-            textView.setText(Integer.toString(getArguments().getInt(ARG_SECTION_NUMBER)));
+            //textView.setText(Integer.toString(getArguments().getInt(ARG_SECTION_NUMBER)));
             return rootView;
         }
 
