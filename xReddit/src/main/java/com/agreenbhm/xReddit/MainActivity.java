@@ -7,6 +7,10 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.shapes.Shape;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -170,6 +174,11 @@ public class MainActivity extends Activity
                 posts[i].setSingleLine(false);
                 posts[i].setPadding(3, 3, 3, 3);
 
+
+                Resources res = getResources();
+                Drawable back = res.getDrawable(R.drawable.back);
+                posts[i].setBackground(back);
+
                 //posts[i] = (TextView) findViewById(R.id.text);
                 posts[i].setText(title);
                 System.out.println("pre-add");
@@ -177,7 +186,7 @@ public class MainActivity extends Activity
 
                 ll.addView(posts[i]);
 
-                separator[i] = (View) view.findViewById(R.id.separator);
+                //separator[i] = (View) view.findViewById(R.id.separator);
 
 
                 //separator[i].setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT));
