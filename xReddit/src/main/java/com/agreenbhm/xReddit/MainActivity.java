@@ -166,13 +166,13 @@ public class MainActivity extends Activity
                 System.out.println("pre-new");
                 posts[i] = new TextView(this);
                 posts[i].setText(title);
-                posts[i].setHeight(80);
+                //posts[i].setHeight(80);
                 posts[i].setEllipsize(TextUtils.TruncateAt.END);
                 posts[i].setClickable(true);
-                posts[i].setMaxLines(3);
+                //posts[i].setMaxLines(3);
                 posts[i].setHorizontallyScrolling(false);
                 posts[i].setSingleLine(false);
-                posts[i].setPadding(3, 3, 3, 3);
+                posts[i].setPadding(3,20,3,20);
 
 
                 Resources res = getResources();
